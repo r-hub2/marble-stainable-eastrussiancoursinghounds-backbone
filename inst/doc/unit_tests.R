@@ -1,150 +1,21 @@
-#### Utility Functions ####
-## bicm()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- round(bicm(M),3)
-expect_equal(test, rbind(c(.216,.216,.568),c(.216,.216,.568),c(.568,.568,.863)))  #BiCM probabilities
+## ----include = FALSE----------------------------------------------------------
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", width = 80)
+knitr::opts_knit$set(global.par = TRUE)
 
-## fastball()
-M <- matrix(rbinom(100*1000,1,0.5),100,1000)
-test <- fastball(M)
-expect_equal(rowSums(test), rowSums(M))  #Row sums match
-expect_equal(colSums(test), colSums(M))  #Column sums match
+## ----echo = FALSE-------------------------------------------------------------
+set.seed(5)
 
-## .retain()
-upper <- rbind(c(.01,.02,.03),  #Unsigned
-               c(.05,.06,.07),
-               c(0.5,0.6,0.7))
-p <- list(upper = upper)
-test <- backbone:::.retain(p, alpha = 0.05, mtc = "none")
-expect_equal(test, rbind(c(0,1,1),
-                         c(0,0,0),
-                         c(0,0,0)))
+## -----------------------------------------------------------------------------
+library(backbone)
+library(igraph)
+library(tinytest)
 
-upper <- rbind(c(.01,.02,.03),  #Signed
-               c(.05,.06,.07),
-               c(0.5,0.6,0.7))
-lower <- rbind(c(0.5,0.6,0.7),
-               c(.05,.06,.07),
-               c(.01,.02,.03))
-p <- list(lower = lower, upper = upper)
-test <- backbone:::.retain(p, alpha = 0.1, mtc = "none")  #Higher alpha because this is a two-tailed test
-expect_equal(test, rbind(c(0,1,1),
-                         c(0,0,0),
-                         c(-1,-1,0)))
-
-#### Null Model Functions ####
-## .sdsm()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.sdsm(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
-expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
-expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
-expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .sdsm_ec()
-M <- rbind(c(10,0,1),c(0,11,0),c(1,0,1))
-test <- backbone:::.sdsm_ec(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
-expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
-expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
-expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .fixedrow()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.fixedrow(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
-expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
-expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
-expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .fixedcol()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.fixedcol(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
-expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
-expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
-expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .fixedfill()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.fixedfill(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
-expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
-expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
-expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .fdsm()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.fdsm(M, signed = TRUE, missing_as_zero = TRUE, alpha = 0.05, mtc = "none", trials = 1000)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
-expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
-expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
-expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .disparity()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.disparity(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .lans()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.lans(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-## .mlf()
-M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
-test <- backbone:::.mlf(M, signed = TRUE, missing_as_zero = TRUE)
-test$upper <- round(test$upper,3)
-test$lower <- round(test$lower,3)
-expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
-expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
-expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
-
-#### Bipartite Backbone Functions ####
-## Define function to compute triangle index
+## -----------------------------------------------------------------------------
 trace <- function(x){sum(diag(x))}
 matcube <- function(x){x%*%x%*%x}
 triangle_index <- function(x){(trace(matcube(x)) + trace(matcube(abs(x))))/(2 * trace(matcube(abs(x))))}
 
-## Bipartite from matrix
+## -----------------------------------------------------------------------------
 B <- rbind(cbind(matrix(rbinom(250,1,.85),10),   #An example block incidence matrix
                  matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.15),10)),
@@ -181,6 +52,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fdsm", signed = TRUE, trials = 250)  #Extract FDSM matrix as signed
 expect_true(is(bb,"matrix"))         #Returns as matrix
 expect_true(all(bb %in% c(-1,0,1)))  #Contains only -1, 0, 1
@@ -189,6 +61,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fixedrow", signed = TRUE)  #Extract fixedrow matrix as signed
 expect_true(is(bb,"matrix"))         #Returns as matrix
 expect_true(all(bb %in% c(-1,0,1)))  #Contains only -1, 0, 1
@@ -197,6 +70,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fixedcol", signed = TRUE)  #Extract fixedcol matrix as signed
 expect_true(is(bb,"matrix"))         #Returns as matrix
 expect_true(all(bb %in% c(-1,0,1)))  #Contains only -1, 0, 1
@@ -205,6 +79,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fixedfill", signed = TRUE)  #Extract fixedfill matrix as signed
 expect_true(is(bb,"matrix"))         #Returns as matrix
 expect_true(all(bb %in% c(-1,0,1)))  #Contains only -1, 0, 1
@@ -213,6 +88,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 B <- as.vector(B)
 make_prohibited <- sample(which(B==0), 5, replace = FALSE)  #Pick some missing edges to prohibit
 B[make_prohibited] <- 10
@@ -227,7 +103,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
-## Bipartite from igraph
+## -----------------------------------------------------------------------------
 B <- rbind(cbind(matrix(rbinom(250,1,.85),10),   #An example block incidence matrix
                  matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.15),10)),
@@ -237,62 +113,66 @@ B <- rbind(cbind(matrix(rbinom(250,1,.85),10),   #An example block incidence mat
            cbind(matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.85),10)))
-B <- igraph::graph_from_biadjacency_matrix(B)          #Convert to igraph
-igraph::V(B)$agent_attrib <- c(c(1:30),rep(NA,75))     #Add agent attribute
-igraph::V(B)$artifact_attrib <- c(rep(NA,30),c(1:75))  #Add artifact attribute
+B <- graph_from_biadjacency_matrix(B)          #Convert to igraph
+V(B)$agent_attrib <- c(c(1:30),rep(NA,75))     #Add agent attribute
+V(B)$artifact_attrib <- c(rep(NA,30),c(1:75))  #Add artifact attribute
 
 bb <- backbone_from_projection(B, model = "sdsm", return = "everything")  #Extract SDSM igraph, return everything
 expect_equal(length(bb),6)  #Returned object contains six elements
 expect_equal(class(bb$bipartite)[1],"igraph")
-expect_true(igraph::is_bipartite(bb$bipartite))
+expect_true(is_bipartite(bb$bipartite))
 expect_equal(class(bb$projection)[1],"igraph")
-expect_false(igraph::is_directed(bb$projection))
+expect_false(is_directed(bb$projection))
 expect_equal(class(bb$backbone)[1],"igraph")
-expect_false(igraph::is_directed(bb$backbone))
+expect_false(is_directed(bb$backbone))
 expect_equal(class(bb$pvalues$upper)[1],"matrix")
 expect_equal(class(bb$narrative)[1],"character")
 expect_equal(class(bb$call)[1],"call")
 
 bb <- backbone_from_projection(B, model = "sdsm")                              #Extract SDSM igraph with defaults
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fdsm", trials = 250)                #Extract FDSM igraph with defaults
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fixedrow")                          #Extract fixedrow igraph with defaults
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fixedrow")                          #Extract fixedcol igraph with defaults
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_projection(B, model = "fixedfill")                         #Extract fixedcol igraph with defaults
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
-igraph::E(B)$weight <- NA
-igraph::E(B)$weight <- sample(c(1,11), length(igraph::E(B)$weight), replace = TRUE, prob = c(.9,.1))
+## -----------------------------------------------------------------------------
+E(B)$weight <- NA
+E(B)$weight <- sample(c(1,11), length(E(B)$weight), replace = TRUE, prob = c(.9,.1))
 bb <- backbone_from_projection(B, model = "sdsm")                              #Extract SDSM igraph with defaults, considering structural values
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
-#### Weighted Backbone Functions ####
-## Multiscale weighted matrix
+## -----------------------------------------------------------------------------
 W <- matrix(c(0,10,10,10,10,75,0,0,0,0,
               10,0,1,1,1,0,0,0,0,0,
               10,1,0,1,1,0,0,0,0,0,
@@ -322,49 +202,55 @@ expect_true(is(bb$call,"call"))
 
 bb <- backbone_from_weighted(W, model = "disparity")  #Extract disparity backbone
 expect_true(is(bb,"matrix"))                          #Returns as matrix
-bb <- igraph::graph_from_adjacency_matrix(bb, mode = "undirected")
-expect_true(igraph::is_tree(bb))                      #Backbone is a tree
+bb <- graph_from_adjacency_matrix(bb, mode = "undirected")
+expect_true(is_tree(bb))                      #Backbone is a tree
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "lans")       #Extract lans backbone
 expect_true(is(bb,"matrix"))                          #Returns as matrix
-bb <- igraph::graph_from_adjacency_matrix(bb, mode = "undirected")
-expect_true(igraph::is_tree(bb))                      #Backbone is a tree
+bb <- graph_from_adjacency_matrix(bb, mode = "undirected")
+expect_true(is_tree(bb))                      #Backbone is a tree
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "mlf")        #Extract mlf backbone
 expect_true(is(bb,"matrix"))                          #Returns as matrix
-bb <- igraph::graph_from_adjacency_matrix(bb, mode = "undirected")
-expect_true(igraph::is_tree(bb))                      #Backbone is a tree
+bb <- graph_from_adjacency_matrix(bb, mode = "undirected")
+expect_true(is_tree(bb))                      #Backbone is a tree
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "global")     #Extract global backbone (unsigned)
 expect_true(is(bb,"matrix"))                          #Returns as matrix
 expect_true(table(bb)[1]==58 & table(bb)[2]==42)      #Contains 58 0s and 42 1s
 bb <- backbone_from_weighted(W, model = "global", parameter = c(10,74))     #Extract global backbone (signed)
 expect_true(table(bb)[1]==12 & table(bb)[2]==78 & table(bb)[3]==10)      #Contains 12 -1s, 78 0s, and 10 1s
 
-## Multiscale weighted igraph
-W <- igraph::graph_from_adjacency_matrix(W, mode = "undirected", weighted = TRUE)
+## -----------------------------------------------------------------------------
+W <- graph_from_adjacency_matrix(W, mode = "undirected", weighted = TRUE)
 
 bb <- backbone_from_weighted(W, model = "disparity")  #Extract disparity backbone
 expect_true(is(bb,"igraph"))                          #Returns as igraph
-expect_true(igraph::is_tree(bb))                      #Backbone is a tree
+expect_true(is_tree(bb))                      #Backbone is a tree
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "lans")       #Extract lans backbone
 expect_true(is(bb,"igraph"))                          #Returns as igraph
-expect_true(igraph::is_tree(bb))                      #Backbone is a tree
+expect_true(is_tree(bb))                      #Backbone is a tree
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "mlf")        #Extract mlf backbone
 expect_true(is(bb,"igraph"))                          #Returns as igraph
-expect_true(igraph::is_tree(bb))                      #Backbone is a tree
+expect_true(is_tree(bb))                      #Backbone is a tree
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "global")     #Extract global backbone (unsigned)
 expect_true(is(bb,"igraph"))                          #Returns as matrix
-bb <- igraph::as_adjacency_matrix(bb, sparse = FALSE)   #Get matrix
+bb <- as_adjacency_matrix(bb, sparse = FALSE)   #Get matrix
 expect_true(table(bb)[1]==58 & table(bb)[2]==42)      #Contains 58 0s and 42 1s
 bb <- backbone_from_weighted(W, model = "global", parameter = c(10,74))     #Extract global backbone (signed)
-bb <- igraph::as_adjacency_matrix(bb, sparse = FALSE, attr = "sign")   #Get matrix
+bb <- as_adjacency_matrix(bb, sparse = FALSE, attr = "sign")   #Get matrix
 expect_true(table(bb)[1]==12 & table(bb)[2]==78 & table(bb)[3]==10)      #Contains 12 -1s, 78 0s, and 10 1s
 
-## Projection of bipartite matrix
+## -----------------------------------------------------------------------------
 W <- rbind(cbind(matrix(rbinom(250,1,.85),10),
                  matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.15),10)),
@@ -385,6 +271,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "lans", signed = TRUE, alpha = 0.5)  #Extract signed lans matrix
 expect_true(is(bb,"matrix"))         #Returns as matrix
 expect_true(all(bb %in% c(-1,0,1)))  #Contains only -1, 0, 1
@@ -393,6 +280,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "mlf", signed = TRUE, alpha = 0.5)  #Extract signed mlf matrix
 expect_true(is(bb,"matrix"))         #Returns as matrix
 expect_true(all(bb %in% c(-1,0,1)))  #Contains only -1, 0, 1
@@ -401,6 +289,7 @@ expect_true(any(bb %in% c(0)))       #Contains some missing edges
 expect_true(any(bb %in% c(1)))       #Contains some positive edges
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
+## -----------------------------------------------------------------------------
 upper <- mean(W) + sd(W)             #Use mean + sd as positive edge threshold
 lower <- mean(W) - sd(W)             #Use mean - sd as negative edge threshold
 bb <- backbone_from_weighted(W, model = "global", parameter = c(lower, upper))  #Extract signed global matrix
@@ -412,7 +301,7 @@ expect_true(any(bb %in% c(1)))       #Contains some positive edges
 triangle_index(bb)
 expect_true(triangle_index(bb)>.8)   #Is nearly balanced
 
-## Projection of bipartite igraph
+## -----------------------------------------------------------------------------
 W <- rbind(cbind(matrix(rbinom(250,1,.85),10),
                  matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.15),10)),
@@ -422,9 +311,9 @@ W <- rbind(cbind(matrix(rbinom(250,1,.85),10),
            cbind(matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.15),10),
                  matrix(rbinom(250,1,.85),10)))
-W <- igraph::graph_from_biadjacency_matrix(W)
-W <- igraph::bipartite_projection(W, which = "false")
-igraph::V(W)$agent_attrib <- c(c(1:30))     #Add agent attribute
+W <- graph_from_biadjacency_matrix(W)
+W <- bipartite_projection(W, which = "false")
+V(W)$agent_attrib <- c(c(1:30))     #Add agent attribute
 
 bb <- backbone_from_weighted(W, model = "disparity", return = "everything")  #Extract disparity igraph, return everything
 expect_equal(length(bb),5)  #Returned object contains five elements
@@ -436,31 +325,33 @@ expect_equal(class(bb$call)[1],"call")
 
 bb <- backbone_from_weighted(W, model = "disparity", alpha = 0.25)            #Extract unweighted disparity igraph
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "lans", alpha = 0.25)                 #Extract unweighted lans igraph
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
+## -----------------------------------------------------------------------------
 bb <- backbone_from_weighted(W, model = "mlf", alpha = 0.25)                  #Extract unweighted mlf igraph
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
-threshold <- mean(igraph::E(W)$weight) + sd(igraph::E(W)$weight)              #Use mean + sd as edge threshold
+## -----------------------------------------------------------------------------
+threshold <- mean(E(W)$weight) + sd(E(W)$weight)              #Use mean + sd as edge threshold
 bb <- backbone_from_weighted(W, model = "global", parameter = threshold)      #Extract unweighted global igraph
 expect_true(is(bb,"igraph"))                                                  #Returns as igraph
-expect_identical(igraph::vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
-expect_identical(igraph::edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
-expect_true(igraph::modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
+expect_identical(vertex_attr_names(bb), c("agent_attrib"))            #Contains correct vertex attributes
+expect_identical(edge_attr_names(bb), c("oldweight"))                 #Contains correct edge attributes
+expect_true(modularity(bb, c(rep(1,10), rep(2,10), rep(3,10))) > .5)  #Backbone has high modularity
 
-#### Unweighted Backbone Functions ####
-#escore
+## -----------------------------------------------------------------------------
 A <- matrix(sample(c(0:1), 100, replace = TRUE),10,10)  #A binary, square, symmetric matrix
 diag(A) <- 0
 A <- pmax(A, t(A))
@@ -530,7 +421,7 @@ expect_true(all(diag(test)==0))  #Diagonal contains 0s
 expect_true(all(test>=0 & test<=1))  #All values between 0 and 1
 expect_true(all(test[A == 0] == 0))  #If edge is missing in original, also missing in result
 
-#normalize
+## -----------------------------------------------------------------------------
 A1 <- matrix(sample(c(0,0,0,1,2,3), 100, replace = TRUE),10,10)  #A weighted, square matrix
 diag(A1) <- 0
 A2 <- pmax(A1, t(A1))  #A weighted, square, symmetric matrix
@@ -553,7 +444,7 @@ expect_true(all(diag(test)==0))  #Diagonal contains 0s
 expect_true(all(test>=0 & test<=1))  #All values between 0 and 1
 expect_true(all(test[A2 == 0] == 0))  #If edge is missing in original, also missing in result
 
-#filter
+## -----------------------------------------------------------------------------
 A1 <- matrix(sample(c(0:10), 2500, replace = TRUE),50,50)  #A weighted, square matrix
 diag(A1) <- 0
 A2 <- A1; A2[upper.tri(A2)] <- t(A1)[upper.tri(A1)]  #Symmetrize using lower triangle
@@ -592,6 +483,7 @@ expect_true(all(diag(test)==0))  #Diagonal contains 0s
 expect_true(all(test %in% c(0,1)))  #All values are 0 or 1
 expect_true(all(test[A2 == 0] == 0))  #If edge is missing in original, also missing in result
 
+## -----------------------------------------------------------------------------
 #skeleton (no particular structure expected in backbone)
 U <- igraph::sample_sbm(60, matrix(c(.75,.25,.25,.25,.75,.25,.25,.25,.75),3,3), c(20,20,20))  #Unweighted graph with three hidden communities
 
@@ -714,3 +606,142 @@ expect_true(which.max(igraph::degree(U)) == which.max(igraph::degree(test$backbo
 expect_true(cor(igraph::degree(U),igraph::degree(test$backbone)) > 0.75)  #Backbone preserves degree distribution
 test2 <- backbone_from_unweighted(U, model = "degree", parameter = .2, return = "everything")
 expect_true(igraph::edge_density(test$backbone) > igraph::edge_density(test2$backbone))  #Smaller parameter yields more sparsification
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.sdsm(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
+expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
+expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
+expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(10,0,1),c(0,11,0),c(1,0,1))
+test <- backbone:::.sdsm_ec(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
+expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
+expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
+expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.fixedrow(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
+expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
+expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
+expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.fixedcol(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
+expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
+expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
+expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.fixedfill(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
+expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
+expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
+expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.fdsm(M, signed = TRUE, missing_as_zero = TRUE, alpha = 0.05, mtc = "none", trials = 1000)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(is.na(diag(test$upper))))  #Upper-tail diagonal is missing
+expect_true(all(is.na(diag(test$lower))))  #Lower-tail diagonal is missing
+expect_true(isSymmetric(test$upper))  #Upper-tail is symmetric
+expect_true(isSymmetric(test$lower))  #Lower-tail is symmetric
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.disparity(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.lans(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- backbone:::.mlf(M, signed = TRUE, missing_as_zero = TRUE)
+test$upper <- round(test$upper,3)
+test$lower <- round(test$lower,3)
+expect_true(is(test, "list") & length(test)==2)  #Output is a two-item list
+expect_true(all(test$upper[upper.tri(test$upper)]>=0 & test$upper[upper.tri(test$upper)]<=1))  #Upper-tail p-values between 0 and 1
+expect_true(all(test$lower[upper.tri(test$lower)]>=0 & test$lower[upper.tri(test$lower)]<=1))  #Lower-tail p-values between 0 and 1
+
+## -----------------------------------------------------------------------------
+M <- rbind(c(0,0,1),c(0,1,0),c(1,0,1))
+test <- round(bicm(M),3)
+expect_equal(test, rbind(c(.216,.216,.568),c(.216,.216,.568),c(.568,.568,.863)))  #BiCM probabilities
+
+## -----------------------------------------------------------------------------
+M <- matrix(rbinom(100*1000,1,0.5),100,1000)
+test <- fastball(M)
+expect_equal(rowSums(test), rowSums(M))  #Row sums match
+expect_equal(colSums(test), colSums(M))  #Column sums match
+
+## -----------------------------------------------------------------------------
+upper <- rbind(c(.01,.02,.03),  #Unsigned
+               c(.05,.06,.07),
+               c(0.5,0.6,0.7))
+p <- list(upper = upper)
+test <- backbone:::.retain(p, alpha = 0.05, mtc = "none")
+expect_equal(test, rbind(c(0,1,1),
+                         c(0,0,0),
+                         c(0,0,0)))
+
+upper <- rbind(c(.01,.02,.03),  #Signed
+               c(.05,.06,.07),
+               c(0.5,0.6,0.7))
+lower <- rbind(c(0.5,0.6,0.7),
+               c(.05,.06,.07),
+               c(.01,.02,.03))
+p <- list(lower = lower, upper = upper)
+test <- backbone:::.retain(p, alpha = 0.1, mtc = "none")  #Higher alpha because this is a two-tailed test
+expect_equal(test, rbind(c(0,1,1),
+                         c(0,0,0),
+                         c(-1,-1,0)))
+
