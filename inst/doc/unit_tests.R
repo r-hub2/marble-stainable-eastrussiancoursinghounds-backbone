@@ -2,9 +2,6 @@
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", width = 80)
 knitr::opts_knit$set(global.par = TRUE)
 
-## ----echo = FALSE-------------------------------------------------------------
-set.seed(5)
-
 ## -----------------------------------------------------------------------------
 library(backbone)
 library(igraph)

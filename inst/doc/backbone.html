@@ -374,7 +374,6 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li><a href="#welcome">Welcome</a></li>
 <li><a href="#loading">Installing and loading the package</a></li>
 <li><a href="#overview">Package overview</a></li>
-<li><a href="#narrative">The narrative parameter</a></li>
 <li><a href="#formats">Supported data formats</a></li>
 </ol></li>
 <li><a href="#weighted">Weighted networks</a>
@@ -480,6 +479,11 @@ function (<code>backbone_from_projection()</code>,
 <code>backbone_from_weighted()</code>, or
 <code>backbone_from_unweighted()</code>), which returns a backbone of
 the same class as <code>dat</code>.</p></li>
+<li><p>Each of these functions includes a <code>narrative</code>
+parameter. Setting <code>narrative = TRUE</code> displays narrative text
+describing the backbone extraction with the relevant citations. This
+text is suitable for use in manuscripts, and ensures complete and
+consistent reporting of the backbone extraction.</p></li>
 </ul>
 <p>The sections below describe and illustrate the backbone functions
 applicable to different types of networks, including <a href="#weighted">weighted networks</a>, <a href="#projection">weighted
@@ -487,14 +491,15 @@ projections</a>, and <a href="#unweighted">unweighted networks</a>.
 Additionally, the package contains some <a href="#utility">utility
 functions</a> that are used by the backbone methods, but may also have
 independent applications.</p>
-</div>
-<div id="narrative" class="section level2">
-<h2>The <code>narrative</code> parameter</h2>
-<p>Each backbone extraction function includes a <code>narrative</code>
-parameter. When <code>narrative = TRUE</code>, narrative text describing
-the backbone extraction will be displayed with the relevant citations.
-This text is suitable for use in manuscripts, and ensures complete and
-consistent reporting of the backbone extraction.</p>
+<p><strong>New in Version 3.0.0 – </strong> In older versions, each
+backbone extraction model required a different function. For example,
+you’d use <code>disparity()</code> to extract a backbone using the
+disparity filter, and <code>mlf()</code> to extract it using the
+marginal likelihood filter. Now all models for a specific type of
+network are accessible in a single function. For example, you can use
+<code>backbone_from_weighted(model = &quot;disparity&quot;)</code> to use the
+disparity filter, and <code>backbone_from_weighted(model = &quot;mlf&quot;)</code>
+to use the marginal likelihood filter.</p>
 </div>
 <div id="formats" class="section level2">
 <h2>Supported data formats</h2>

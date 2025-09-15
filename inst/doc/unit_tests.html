@@ -373,8 +373,9 @@ projection</a></li>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>The “vignette” is designed solely to display the automated unit tests
-used to evaluate the <code>backbone</code> package. To identify any
-failed unit tests, search in the vignette for the word “failed”.</p>
+used to check the <code>backbone</code> package during development. To
+identify any failed unit tests, search in the vignette for the word
+“failed”.</p>
 <p>For a general introduction to the backbone package, please see the <a href="../doc/backbone.html">Introduction to Backbone</a> vignette. Or,
 for a complete example using empirical data, please see the <a href="../doc/senate.html">Empirical Example of Backbone Extraction</a>
 vignette.</p>
@@ -1002,7 +1003,7 @@ vignette.</p>
 <span id="cb26-17"><a href="#cb26-17" tabindex="-1"></a><span class="co">#&gt; ----- PASSED      : &lt;--&gt;</span></span>
 <span id="cb26-18"><a href="#cb26-18" tabindex="-1"></a><span class="co">#&gt;  call| expect_true(any(bb %in% c(1)))</span></span>
 <span id="cb26-19"><a href="#cb26-19" tabindex="-1"></a><span class="fu">triangle_index</span>(bb)</span>
-<span id="cb26-20"><a href="#cb26-20" tabindex="-1"></a><span class="co">#&gt; [1] 0.9918367</span></span>
+<span id="cb26-20"><a href="#cb26-20" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
 <span id="cb26-21"><a href="#cb26-21" tabindex="-1"></a><span class="fu">expect_true</span>(<span class="fu">triangle_index</span>(bb)<span class="sc">&gt;</span>.<span class="dv">8</span>)   <span class="co">#Is nearly balanced</span></span>
 <span id="cb26-22"><a href="#cb26-22" tabindex="-1"></a><span class="co">#&gt; ----- PASSED      : &lt;--&gt;</span></span>
 <span id="cb26-23"><a href="#cb26-23" tabindex="-1"></a><span class="co">#&gt;  call| expect_true(triangle_index(bb) &gt; 0.8)</span></span></code></pre></div>
@@ -1368,7 +1369,7 @@ vignette.</p>
 <span id="cb33-43"><a href="#cb33-43" tabindex="-1"></a><span class="co">#&gt; ----- PASSED      : &lt;--&gt;</span></span>
 <span id="cb33-44"><a href="#cb33-44" tabindex="-1"></a><span class="co">#&gt;  call| expect_true(all(test[A1 == 0] == 0))</span></span>
 <span id="cb33-45"><a href="#cb33-45" tabindex="-1"></a><span class="fu">sum</span>(test<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">/</span> <span class="fu">sum</span>(A1<span class="sc">!=</span><span class="dv">0</span>)</span>
-<span id="cb33-46"><a href="#cb33-46" tabindex="-1"></a><span class="co">#&gt; [1] 0.5011166</span></span>
+<span id="cb33-46"><a href="#cb33-46" tabindex="-1"></a><span class="co">#&gt; [1] 0.5797753</span></span>
 <span id="cb33-47"><a href="#cb33-47" tabindex="-1"></a><span class="fu">expect_true</span>((<span class="fu">sum</span>(test<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">/</span> <span class="fu">sum</span>(A1<span class="sc">!=</span><span class="dv">0</span>)) <span class="sc">&gt;</span> <span class="fl">0.3</span> <span class="sc">&amp;</span> (<span class="fu">sum</span>(test<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">/</span> <span class="fu">sum</span>(A1<span class="sc">!=</span><span class="dv">0</span>)) <span class="sc">&lt;</span> <span class="fl">0.7</span>)  <span class="co">#Should keep 30-70% of original edges on average</span></span>
 <span id="cb33-48"><a href="#cb33-48" tabindex="-1"></a><span class="co">#&gt; ----- PASSED      : &lt;--&gt;</span></span>
 <span id="cb33-49"><a href="#cb33-49" tabindex="-1"></a><span class="co">#&gt;  call| expect_true((sum(test != 0)/sum(A1 != 0)) &gt; 0.3 &amp; (sum(test != </span></span>
